@@ -1,9 +1,8 @@
-import { Handler } from 'aws-cdk-lib/aws-lambda';
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { PRODUCTS } from './products';
 import { formatResponse } from './utils';
 
-export const handler: Handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     const id = event.pathParameters?.id;
     const product = PRODUCTS.find((product) => product.id === id);

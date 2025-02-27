@@ -1,11 +1,18 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { PRODUCTS } from './products';
 import { formatResponse } from './utils';
+import  * as ProductService from './services/ProductService';
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
     const id = event.pathParameters?.id;
-    const product = PRODUCTS.find((product) => product.id === id);
+
+    if (!id) {
+      return formatResponse(400, {
+        message: 'Product id was not provided',
+      })
+    }
+  
+    const product = await ProductService.getProductById(id);
 
     if (!product) {
       return formatResponse(404, {

@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { handler as getProductById} from '../lib/lambdas/getProductById';
-import { PRODUCTS } from '../lib/lambdas/products';
+import { PRODUCTS } from '../lib/lambdas/mocks/products';
 
 describe('getProducts Lambda', () => {
   let mockEvent: APIGatewayProxyEvent;

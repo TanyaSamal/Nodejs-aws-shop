@@ -1,6 +1,6 @@
-import { Product } from '../models/product';
+import { ProductInStock } from "../../lib/lambdas/models/product";
 
-export const PRODUCTS: Product[] = [
+export const PRODUCTS: ProductInStock[] = [
   {
     id: '1',
     title: 'Product 1',

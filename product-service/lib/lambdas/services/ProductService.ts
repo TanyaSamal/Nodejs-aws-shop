@@ -2,7 +2,7 @@ import { Product, ProductInStock } from '../models/product';
 import { Stock } from '../models/stock';
 import { randomUUID } from 'crypto';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, ScanCommand, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, ScanCommand, GetCommand, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 
 const client = new DynamoDBClient({ region: process.env.CDK_DEFAULT_REGION });
 const ddbDocClient = DynamoDBDocumentClient.from(client);
@@ -28,8 +28,16 @@ const createProduct = async (product: Product, count: number): Promise<Product> 
     }
   };
   
-  await ddbDocClient.send(new PutCommand(productParams));
-  await ddbDocClient.send(new PutCommand(stockParams));
+  await ddbDocClient.send(new TransactWriteCommand({
+    TransactItems: [
+      {
+        Put: productParams
+      },
+      {
+        Put: stockParams
+      },
+    ],
+  }));
 
   return product;
 };

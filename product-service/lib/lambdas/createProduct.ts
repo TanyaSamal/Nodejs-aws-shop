@@ -32,7 +32,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       price
     }, count);
 
-    console.log('New roduct was successfuly created:', product);
+    console.log('New product was successfuly created:', product);
 
     return formatResponse(201, product);
   } catch (error) {

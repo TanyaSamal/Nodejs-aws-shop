@@ -9,17 +9,27 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 const productsTableName = process.env.PRODUCTS_TABLE_NAME;
 const stockTableName = process.env.STOCK_TABLE_NAME;
 
-const createProduct = async (product: Product): Promise<Product> => {
+const createProduct = async (product: Product, count: number): Promise<Product> => {
   const productId = randomUUID();
-  const params = {
+
+  const productParams = {
     TableName: productsTableName,
     Item: {
       id: productId,
       ...product
     }
   };
+
+  const stockParams = {
+    TableName: stockTableName,
+    Item: {
+      product_id: productId,
+      count
+    }
+  };
   
-  await ddbDocClient.send(new PutCommand(params));
+  await ddbDocClient.send(new PutCommand(productParams));
+  await ddbDocClient.send(new PutCommand(stockParams));
 
   return product;
 };

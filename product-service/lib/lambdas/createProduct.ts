@@ -17,7 +17,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     const { title, description, price, count } = JSON.parse(event.body);
 
-    if (!title || price !== undefined  || !description || count !== undefined) {
+    if (!title || !description || price === undefined || count === undefined) {
       console.log(`Validation error, missing fields:
         title=${title}, description=${description}, price=${price}, count=${count}`);
   

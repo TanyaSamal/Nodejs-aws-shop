@@ -4,7 +4,7 @@ import  * as ProductService from './services/ProductService';
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
-    console.log('Processing createProduct request');
+    console.log('Processing createProduct request', event);
 
     if (!event.body) {
       console.log('Missing request body');
@@ -17,12 +17,20 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     const { title, description, price, count } = JSON.parse(event.body);
 
-    if (!title || !price || !description || !count) {
+    if (!title || price !== undefined  || !description || count !== undefined) {
       console.log(`Validation error, missing fields:
         title=${title}, description=${description}, price=${price}, count=${count}`);
   
       return formatResponse(400, {
-        error: 'Validation failed'
+        error: 'Validation failed: missing fields'
+      });
+    }
+
+    if (title.length === 0 || description.length === 0) {
+      console.log('Validation error title and description can not be empty');
+  
+      return formatResponse(400, {
+        error: 'Validation failed: title and description can not be empty'
       });
     }
 

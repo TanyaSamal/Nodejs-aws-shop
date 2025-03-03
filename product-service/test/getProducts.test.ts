@@ -45,8 +45,6 @@ describe('getProducts Lambda', () => {
 
     const response = await getProducts(event);
 
-    console.log(response);
-
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toEqual([]);
     expect(JSON.parse(response.body).length).toEqual(0);

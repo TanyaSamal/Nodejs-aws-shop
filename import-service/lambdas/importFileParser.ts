@@ -45,12 +45,5 @@ export const handler: S3Handler = async (event: S3Event) => {
     });
   } catch (error) {
     console.error('Error processing S3 event:', error);
-
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
-    throw error;
   }
 };

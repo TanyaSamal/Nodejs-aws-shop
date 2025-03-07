@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
@@ -45,7 +46,14 @@ export class ImportServiceStack extends cdk.Stack {
       bundling: lambdaBundlingObject
     });
 
-    importBucket.grantRead(importFileParserFunction);
+    importBucket.grantReadWrite(importFileParserFunction);
+
+    const policy = new iam.PolicyStatement({
+      actions: ['s3:PutObject', 's3:DeleteObject'],
+      resources: [`${importBucket.bucketArn}/parsed/*`, `${importBucket.bucketArn}/uploaded/*`],
+    });
+
+    importFileParserFunction.addToRolePolicy(policy);
 
     importBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED,

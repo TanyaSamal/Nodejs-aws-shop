@@ -39,7 +39,10 @@ const createProduct = async (product: Product, count: number): Promise<Product> 
     ],
   }));
 
-  return product;
+  return {
+    id: productId,
+    ...product,
+  };
 };
 
 const getProductById = async (productId: string): Promise<ProductInStock> => {

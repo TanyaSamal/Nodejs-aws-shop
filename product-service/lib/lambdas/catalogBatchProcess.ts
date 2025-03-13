@@ -1,7 +1,7 @@
 import { SQSEvent, SQSRecord } from 'aws-lambda';
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import  * as ProductService from './services/ProductService';
-import { validateProductData, validateStockData } from './utils';
+import { formatResponse, validateProductData, validateStockData } from './utils';
 import { Product } from './models/product';
 
 const snsClient = new SNSClient({});
@@ -15,7 +15,13 @@ export const handler = async (event: SQSEvent) => {
     createdProducts: [] as any[]
   };
 
-  const createPromises = event.Records.map(async (record) => {
+  if (event.Records.length === 0) {
+    return formatResponse(400, {
+      error: 'Records are empty'
+    });
+  }
+
+  const recordPromises = event.Records.map(async (record) => {
     try {
       const product = await processRecord(record);
       results.successful++;
@@ -32,7 +38,7 @@ export const handler = async (event: SQSEvent) => {
     }
   });
 
-  await Promise.all(createPromises);
+  await Promise.all(recordPromises);
 
   if (results.createdProducts.length > 0) {
     try {
@@ -51,13 +57,12 @@ export const handler = async (event: SQSEvent) => {
     });
   }
 
-  return {
-    statusCode: results.failed > 0 ? 206 : 200,
-    body: JSON.stringify({
+  return formatResponse(results.failed > 0 ? 206 : 200,
+    JSON.stringify({
       message: `Processed ${results.successful} products successfully, ${results.failed} failed`,
       errors: results.errors
     }),
-  };
+  )
 };
 
 const processRecord = async (record: SQSRecord): Promise<Product> => {

@@ -12,7 +12,7 @@ export const handler = async (event: SQSEvent) => {
     successful: 0,
     failed: 0,
     errors: [] as string[],
-    createdProducts: [] as any[]
+    createdProducts: [] as Product[]
   };
 
   if (event.Records.length === 0) {
@@ -42,7 +42,7 @@ export const handler = async (event: SQSEvent) => {
 
   if (results.createdProducts.length > 0) {
     try {
-      await sendSNSNotification(results);
+      await sendSNSNotification(results.createdProducts);
     } catch (error) {
       console.error('Failed to send SNS notification:', error);
     }
@@ -88,24 +88,24 @@ const processRecord = async (record: SQSRecord): Promise<Product> => {
   }
 };
 
-const sendSNSNotification = async (results: { successful: number, createdProducts: any[] }) => {
-  const message = {
-    subject: 'AWS DB Products Created Successfully',
-    message: JSON.stringify({
-      successfullyCreated: results.successful,
-      products: results.createdProducts.map(product => ({
-        title: product.title,
-        description: product.description,
-        price: product.price
-      }))
-    }, null, 2)
-  };
+const sendSNSNotification = async (results: Product[]) => {
+  for (const product of results) {
+    const command = new PublishCommand({
+      TopicArn: SNS_TOPIC_ARN,
+      Subject: 'AWS DB Products Created Successfully',
+      Message: JSON.stringify({
+        message: `Product ${product.title} created`,
+        product: product,
+        price: Number(product.price),
+      }),
+      MessageAttributes: {
+        price: {
+          DataType: 'Number',
+          StringValue: product.price.toString()
+        }
+      }
+    });
 
-  const command = new PublishCommand({
-    TopicArn: SNS_TOPIC_ARN,
-    Subject: message.subject,
-    Message: message.message
-  });
-
-  await snsClient.send(command);
+    await snsClient.send(command);
+  }
 };

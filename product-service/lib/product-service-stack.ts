@@ -15,6 +15,7 @@ dotenv.config();
 const productsTableName = process.env.PRODUCTS_TABLE || 'Products';
 const stocksTableName = process.env.STOCK_TABLE || 'Stocks';
 const subscriptionEmail = process.env.SUBSCRIPTION_EMAIL || 'myemail@example.com';
+const filteredEmail = process.env.FILTERED_EMAIL || 'myemail@example.com';
 
 export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -50,7 +51,25 @@ export class ProductServiceStack extends cdk.Stack {
     });
 
     createProductTopic.addSubscription(
-      new subscriptions.EmailSubscription(subscriptionEmail)
+      new subscriptions.EmailSubscription(subscriptionEmail, {
+          filterPolicyWithMessageBody: {
+            price: sns.FilterOrPolicy.filter(sns.SubscriptionFilter.numericFilter({
+              lessThanOrEqualTo: 50
+            }))
+          },
+          json: true
+      })
+    );
+
+    createProductTopic.addSubscription(
+      new subscriptions.EmailSubscription(filteredEmail, {
+        filterPolicyWithMessageBody: {
+          price: sns.FilterOrPolicy.filter(sns.SubscriptionFilter.numericFilter({
+            greaterThan: 50
+          }))
+        },
+        json: true
+      })
     );
 
     // Lambda functions

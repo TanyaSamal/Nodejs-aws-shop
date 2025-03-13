@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { formatResponse } from './utils';
+import { formatResponse, validateProductData, validateStockData } from './utils';
 import  * as ProductService from './services/ProductService';
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -17,20 +17,20 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     const { title, description, price, count } = JSON.parse(event.body);
 
-    if (!title || !description || price === undefined || count === undefined) {
+    if (!validateProductData({ title, description, price })) {
       console.log(`Validation error, missing fields:
-        title=${title}, description=${description}, price=${price}, count=${count}`);
-  
+        title=${title}, description=${description}, price=${price}`);
+
       return formatResponse(400, {
         error: 'Validation failed: missing fields'
       });
     }
 
-    if (title.length === 0 || description.length === 0) {
-      console.log('Validation error title and description can not be empty');
-  
+    if (!validateStockData({ count })) {
+      console.log(`Validation error, incorrect count=${count}`);
+
       return formatResponse(400, {
-        error: 'Validation failed: title and description can not be empty'
+        error: 'Validation failed: incorrect data'
       });
     }
 

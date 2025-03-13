@@ -1,2 +1,8 @@
-id,title,description,price,count
-1,Title csv,Example description csv,133,4
+title,description,price,count
+Title csv db 1,Example description csv 1,133,4
+Title csv db 2,Example description csv 2,53,0
+Title csv db 3,Example description csv 3,88,-2
+Title csv db 4,Example description csv 4,"22",5
+Title csv db 5,Example description csv 5,489,13
+Title csv db 6,Example description csv 6,27,9
+,Example description csv 5,489,13

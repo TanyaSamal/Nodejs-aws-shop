@@ -36,15 +36,16 @@ export const handler = async (event: S3Event) => {
       stream
         .pipe(csvParser())
         .on('data', async (data: any) => {
-          try {
-            stream.pause();
+          // try {
+          //   stream.pause();
 
-            await sendDataToSQS(data);
+          //   await sendDataToSQS(data);
             
-            stream.resume();
-          } catch (error) {
-            console.error('Error processing record:', error);
-          }
+          //   stream.resume();
+          // } catch (error) {
+          //   console.error('Error processing record:', error);
+          // }
+          console.log(data);
         })
         .on('error', (error: unknown) => {
           console.error('Error parsing CSV:', error);

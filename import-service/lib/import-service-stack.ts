@@ -78,10 +78,29 @@ export class ImportServiceStack extends cdk.Stack {
       },
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
-        allowMethods: apigateway.Cors.ALL_METHODS
+        allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: [
+          'Content-Type',
+          'X-Amz-Date',
+          'Authorization',
+          'X-Api-Key',
+          'X-Amz-Security-Token',
+        ],
+        allowCredentials: true,
       }
     });
 
+    const authorizerLambdaArn = cdk.Fn.importValue('AuthorizerLambdaArn');
+    const authorizer = new apigateway.TokenAuthorizer(this, 'ImportApiAuthorizer', {
+      handler: NodejsFunction.fromFunctionArn(
+        this, 
+        'AuthorizerFunction',
+        authorizerLambdaArn
+      ),
+      identitySource: apigateway.IdentitySource.header('Authorization'),
+      resultsCacheTtl: cdk.Duration.seconds(0),
+    });
+  
     const importResource = api.root.addResource('import');
     importResource.addMethod('GET', 
       new apigateway.LambdaIntegration(importProductsFile), {
@@ -91,6 +110,18 @@ export class ImportServiceStack extends cdk.Stack {
         requestValidatorOptions: {
           validateRequestParameters: true,
         },
+        authorizer: authorizer,
+        authorizationType: apigateway.AuthorizationType.CUSTOM,
+        methodResponses: [
+          {
+            statusCode: '200',
+            responseParameters: {
+              'method.response.header.Access-Control-Allow-Origin': true,
+              'method.response.header.Access-Control-Allow-Headers': true,
+              'method.response.header.Access-Control-Allow-Methods': true,
+            },
+          },
+        ],
       }
     );
   }

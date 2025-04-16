@@ -1,0 +1,29 @@
+# Ignore Node.js dependencies installed locally
+node_modules/
+
+# Ignore build folder (build is done by Docker)
+dist/
+
+# Ignore local Docker and environment files
+Dockerfile
+.dockerignore
+
+# Ignore IDE and editor-specific files
+*.log
+.vscode/
+.idea/
+README.md
+
+# Ignore test files and coverage reports
+test/
+coverage/
+
+# Ignore npm debug files
+npm-debug.log
+
+# Ignore Git files
+.git
+.gitignore
+
+# Ignore CDK output directory
+cdk.out

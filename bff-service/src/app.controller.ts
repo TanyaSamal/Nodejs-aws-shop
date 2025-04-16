@@ -17,7 +17,7 @@ export class AppController {
       const pathSegments = request.path
         .split('/')
         .filter((segment) => segment.length > 0);
-      console.log('pathSegments', pathSegments);
+
       if (pathSegments.length < 1) {
         throw new HttpException(
           'Invalid request: service name is required',
@@ -27,23 +27,33 @@ export class AppController {
 
       const serviceName = pathSegments[0];
       const recipientURL = this.appService.getRecipientURL(serviceName);
-      console.log('recipientURL', recipientURL);
 
       if (!recipientURL) {
         throw new HttpException('Cannot process request', 502);
       }
+
       const remainingPath = pathSegments.slice(1).join('/');
       const fullRecipientURL = remainingPath
         ? `${recipientURL}/${remainingPath}`
         : recipientURL;
-      console.log('fullRecipientURL', fullRecipientURL);
-      return await this.appService.proxyRequest(
-        fullRecipientURL,
-        request.method,
-        request.headers,
-        request.query,
-        request.body,
-      );
+
+      if (serviceName === 'products' && request.method === 'GET') {
+        return await this.appService.cashProducts(
+          fullRecipientURL,
+          request.method,
+          request.headers,
+          request.query,
+          request.body,
+        );
+      } else {
+        return await this.appService.proxyRequest(
+          fullRecipientURL,
+          request.method,
+          request.headers,
+          request.query,
+          request.body,
+        );
+      }
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

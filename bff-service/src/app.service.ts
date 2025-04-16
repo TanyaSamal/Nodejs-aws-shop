@@ -1,11 +1,16 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosError } from 'axios';
 import { ProxyResponse, QueryParams, RequestHeaders } from './types';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class AppService {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   getRecipientURL(serviceName: string): string | undefined {
     return this.configService.get(serviceName.toUpperCase());
@@ -47,6 +52,39 @@ export class AppService {
         );
       }
       throw new HttpException('Cannot process request', 502);
+    }
+  }
+
+  async cashProducts(
+    url: string,
+    method: string,
+    headers: RequestHeaders,
+    query: QueryParams,
+    body: unknown,
+  ): Promise<any> {
+    const cacheKey = 'PRODUCTS';
+    const cachedData = await this.cacheManager.get(cacheKey);
+
+    if (cachedData) {
+      console.log('Returning cached data');
+      return cachedData;
+    }
+
+    try {
+      const response = await this.proxyRequest(
+        url,
+        method,
+        headers,
+        query,
+        body,
+      );
+
+      await this.cacheManager.set(cacheKey, response);
+
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('Failed to fetch products list', 502);
     }
   }
 }
